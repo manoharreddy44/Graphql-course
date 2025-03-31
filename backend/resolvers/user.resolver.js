@@ -33,7 +33,11 @@ const userResolver = {
 				});
 
 				await newUser.save();
-				await context.login(newUser);
+				if (context.login) {
+					await context.login(newUser);
+				} else {
+					console.log("context.login is not defined. Ensure authentication is properly configured.");
+				}
 				return newUser;
 			} catch (err) {
 				console.error("Error in signUp: ", err);
@@ -43,7 +47,9 @@ const userResolver = {
 
 		login: async (_, { input }, context) => {
 			try {
+				console.log(context + " context in login resolver");
 				const { username, password } = input;
+				if (!username || !password) throw new Error("All fields are required");
 				const { user } = await context.authenticate("graphql-local", { username, password });
 
 				await context.login(user);
@@ -56,10 +62,10 @@ const userResolver = {
 		logout: async (_, __, context) => {
 			try {
 				await context.logout();
-				req.session.destroy((err) => {
+				context.req.session.destroy((err) => {
 					if (err) throw err;
 				});
-				res.clearCookie("connect.sid");
+				context.res.clearCookie("connect.sid");
 
 				return { message: "Logged out successfully" };
 			} catch (err) {

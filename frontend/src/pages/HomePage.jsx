@@ -3,6 +3,9 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 import Cards from "../components/Cards";
 import TransactionForm from "../components/TransactionForm";
+import toast from "react-hot-toast";
+import { useMutation } from "@apollo/client";
+import { LOGOUT } from "../graphql/mutations/user.mutation";
 
 import { MdLogout } from "react-icons/md";
 
@@ -25,11 +28,19 @@ const HomePage = () => {
 		],
 	};
 
-	const handleLogout = () => {
-		console.log("Logging out...");
+	const [logout, { loading }] = useMutation(LOGOUT, {
+		refetchQueries: ["GetAuthenticatedUser"],
+	});
+	const handleLogout = async () => {
+		try {
+			await logout();
+			// Clear the Apollo Client cache FROM THE DOCS
+			// https://www.apollographql.com/docs/react/caching/advanced-topics/#:~:text=Resetting%20the%20cache,any%20of%20your%20active%20queries.
+		} catch (error) {
+			console.error("Error logging out:", error);
+			toast.error(error.message);
+		}
 	};
-
-	const loading = false;
 
 	return (
 		<>
