@@ -18,9 +18,11 @@ import mergedTypeDefs from "./typeDefs/index.js";
 
 import { connectDB } from "./db/connectDB.js";
 import { configurePassport } from "./passport/passport.config.js";
+import path from "path";
 
 dotenv.config();
 configurePassport();
+const __dirname = path.resolve();
 
 const app = express();
 
@@ -77,7 +79,13 @@ app.use(
 );
 
 
+app.use(express.static(path.join(__dirname, "frontend/dist")));
 
+app.get("*", (req, res) => {
+	if (!req.originalUrl.startsWith("/graphql")) {
+		res.sendFile(path.join(__dirname, "frontend/dist", "index.html"));
+	}
+});
 
 
 // Modified server startup
